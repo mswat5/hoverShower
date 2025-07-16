@@ -42,7 +42,39 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     );
     return true; // Keep message channel open for async response
   }
+
+  // New handler for fetch requests
+  if (request.action === "fetchPreview") {
+    fetchPreviewData(request.url)
+      .then((data) => sendResponse(data))
+      .catch((error) =>
+        sendResponse({
+          success: false,
+          error: error.message || "Failed to load preview",
+        })
+      );
+    return true; // Keep message channel open for async response
+  }
 });
+
+// New function to fetch preview data
+async function fetchPreviewData(url) {
+  try {
+    const response = await fetch("http://localhost:3001/api/preview", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Preview fetch error:", error);
+    throw new Error("Failed to load preview");
+  }
+}
 
 // Clean up old cache entries periodically
 chrome.alarms.onAlarm.addListener((alarm) => {

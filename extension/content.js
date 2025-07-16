@@ -113,15 +113,13 @@ class SmartLinkPreview {
     this.displayPreview({ loading: true, url: fullUrl }, event);
 
     try {
-      const response = await fetch("http://localhost:3001/api/preview", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url: fullUrl }),
+      // Use message passing to request data from background script
+      const data = await new Promise((resolve) => {
+        chrome.runtime.sendMessage(
+          { action: "fetchPreview", url: fullUrl },
+          (response) => resolve(response)
+        );
       });
-
-      const data = await response.json();
 
       if (data.success) {
         // Cache the result

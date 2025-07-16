@@ -3,7 +3,7 @@
   "name": "SmartLink PRO",
   "version": "1.0.0",
   "description": "Preview any link's live content on hover",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "storage", "http://localhost:3001/*"],
   "host_permissions": ["http://localhost:3001/*"],
   "background": {
     "service_worker": "background.js"
