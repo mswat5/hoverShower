@@ -1,0 +1,130 @@
+/* SmartLink Preview Styles */
+.smartlink-preview {
+  position: absolute;
+  width: 400px;
+  height: 300px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  z-index: 2147483647; /* Maximum z-index */
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.smartlink-header {
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.smartlink-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a1a1a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smartlink-url {
+  font-size: 12px;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smartlink-loading {
+  font-size: 13px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.smartlink-loading::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.smartlink-error {
+  font-size: 13px;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.smartlink-content {
+  height: calc(100% - 60px);
+  overflow: hidden;
+}
+
+.smartlink-content iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .smartlink-preview {
+    width: calc(100vw - 20px);
+    max-width: 400px;
+    height: 250px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .smartlink-preview {
+    background: #1f2937;
+    border-color: #374151;
+  }
+
+  .smartlink-header {
+    background: #111827;
+    border-color: #374151;
+  }
+
+  .smartlink-title {
+    color: #f9fafb;
+  }
+
+  .smartlink-url {
+    color: #9ca3af;
+  }
+
+  .smartlink-loading {
+    color: #9ca3af;
+  }
+}
+
+/* Prevent conflicts with host page styles */
+.smartlink-preview * {
+  box-sizing: border-box;
+}

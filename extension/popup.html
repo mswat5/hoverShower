@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartLink PRO Settings</title>
+    <style>
+      body {
+        width: 300px;
+        min-height: 200px;
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f8f9fa;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .header p {
+        margin: 5px 0 0 0;
+        font-size: 12px;
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 20px;
+      }
+
+      .toggle-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .toggle-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+      }
+
+      .toggle-switch {
+        position: relative;
+        width: 50px;
+        height: 24px;
+        background: #e5e7eb;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      .toggle-switch.active {
+        background: #10b981;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .toggle-switch.active .toggle-slider {
+        transform: translateX(26px);
+      }
+
+      .stats {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+        border: 1px solid #e5e7eb;
+      }
+
+      .stats h3 {
+        margin: 0 0 12px 0;
+        font-size: 14px;
+        color: #374151;
+      }
+
+      .stat-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 13px;
+      }
+
+      .stat-label {
+        color: #6b7280;
+      }
+
+      .stat-value {
+        font-weight: 500;
+        color: #111827;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-primary {
+        background: #3b82f6;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #2563eb;
+      }
+
+      .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+      }
+
+      .btn-secondary:hover {
+        background: #e5e7eb;
+      }
+
+      .status {
+        margin-top: 12px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .status.success {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      .status.error {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .status.warning {
+        background: #fef3c7;
+        color: #92400e;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>SmartLink PRO</h1>
+      <p>Link Preview Extension</p>
+    </div>
+
+    <div class="content">
+      <div class="toggle-section">
+        <span class="toggle-label">Enable Previews</span>
+        <div class="toggle-switch" id="toggleSwitch">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <h3>Statistics</h3>
+        <div class="stat-item">
+          <span class="stat-label">Previews Shown</span>
+          <span class="stat-value" id="previewCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Cache Size</span>
+          <span class="stat-value" id="cacheSize">0 KB</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Backend Status</span>
+          <span class="stat-value" id="backendStatus">Checking...</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" id="clearCache">Clear Cache</button>
+        <button class="btn btn-primary" id="testBackend">Test Backend</button>
+      </div>
+
+      <div class="status" id="statusMessage" style="display: none"></div>
+    </div>
+
+    <script>
+      class PopupManager {
+        constructor() {
+          this.init();
+        }
+
+        async init() {
+          await this.loadSettings();
+          this.setupEventListeners();
+          this.checkBackendStatus();
+          this.updateStats();
+        }
+
+        async loadSettings() {
+          const result = await chrome.storage.sync.get(["enabled"]);
+          const enabled = result.enabled !== false;
+
+          const toggle = document.getElementById("toggleSwitch");
+          toggle.classList.toggle("active", enabled);
+        }
+
+        setupEventListeners() {
+          // Toggle switch
+          document
+            .getElementById("toggleSwitch")
+            .addEventListener("click", this.toggleExtension.bind(this));
+
+          // Clear cache button
+          document
+            .getElementById("clearCache")
+            .addEventListener("click", this.clearCache.bind(this));
+
+          // Test backend button
+          document
+            .getElementById("testBackend")
+            .addEventListener("click", this.testBackend.bind(this));
+        }
+
+        async toggleExtension() {
+          const toggle = document.getElementById("toggleSwitch");
+          const enabled = !toggle.classList.contains("active");
+
+          // Update UI
+          toggle.classList.toggle("active", enabled);
+
+          // Save setting
+          await chrome.storage.sync.set({ enabled });
+
+          // Notify content scripts
+          try {
+            const [tab] = await chrome.tabs.query({
+              active: true,
+              currentWindow: true,
+            });
+            if (tab) {
+              chrome.tabs.sendMessage(tab.id, { action: "toggle", enabled });
+            }
+          } catch (error) {
+            console.error("Error notifying content script:", error);
+          }
+
+          this.showStatus(
+            enabled ? "Extension enabled" : "Extension disabled",
+            "success"
+          );
+        }
+
+        async clearCache() {
+          try {
+            await chrome.storage.local.clear();
+            this.showStatus("Cache cleared successfully", "success");
+            this.updateStats();
+          } catch (error) {
+            this.showStatus("Failed to clear cache", "error");
+          }
+        }
+
+        async testBackend() {
+          const statusEl = document.getElementById("backendStatus");
+          statusEl.textContent = "Testing...";
+
+          try {
+            const response = await fetch("http://localhost:3001/health");
+            const data = await response.json();
+
+            if (data.status === "OK") {
+              statusEl.textContent = "Connected";
+              statusEl.style.color = "#059669";
+              this.showStatus("Backend connection successful", "success");
+            } else {
+              throw new Error("Invalid response");
+            }
+          } catch (error) {
+            statusEl.textContent = "Disconnected";
+            statusEl.style.color = "#dc2626";
+            this.showStatus(
+              "Backend connection failed. Make sure server is running on port 3001",
+              "error"
+            );
+          }
+        }
+
+        async checkBackendStatus() {
+          try {
+            const response = await fetch("http://localhost:3001/health", {
+              signal: AbortSignal.timeout(3000),
+            });
+            const data = await response.json();
+
+            const statusEl = document.getElementById("backendStatus");
+            if (data.status === "OK") {
+              statusEl.textContent = "Connected";
+              statusEl.style.color = "#059669";
+            } else {
+              statusEl.textContent = "Error";
+              statusEl.style.color = "#dc2626";
+            }
+          } catch (error) {
+            const statusEl = document.getElementById("backendStatus");
+            statusEl.textContent = "Disconnected";
+            statusEl.style.color = "#dc2626";
+          }
+        }
+
+        async updateStats() {
+          try {
+            // Get storage usage
+            const usage = await chrome.storage.local.getBytesInUse();
+            document.getElementById("cacheSize").textContent = `${Math.round(
+              usage / 1024
+            )} KB`;
+
+            // Get preview count (this would need to be tracked in content script)
+            const stats = await chrome.storage.local.get(["previewCount"]);
+            document.getElementById("previewCount").textContent =
+              stats.previewCount || 0;
+          } catch (error) {
+            console.error("Error updating stats:", error);
+          }
+        }
+
+        showStatus(message, type) {
+          const statusEl = document.getElementById("statusMessage");
+          statusEl.textContent = message;
+          statusEl.className = `status ${type}`;
+          statusEl.style.display = "block";
+
+          // Hide after 3 seconds
+          setTimeout(() => {
+            statusEl.style.display = "none";
+          }, 3000);
+        }
+      }
+
+      // Initialize popup
+      document.addEventListener("DOMContentLoaded", () => {
+        new PopupManager();
+      });
+    </script>
+  </body>
+</html>

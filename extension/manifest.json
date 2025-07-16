@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "SmartLink PRO",
+  "version": "1.0.0",
+  "description": "Preview any link's live content on hover",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["http://localhost:3001/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "SmartLink PRO Settings"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["iframe.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+#smartlink-preview {
+  position: absolute;
+  z-index: 9999;
+  width: 400px;
+  max-height: 300px;
+  overflow: auto;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  font-size: 12px;
+  display: none;
+}
